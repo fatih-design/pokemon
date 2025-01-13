@@ -9,7 +9,20 @@ function App() {
     async function fetchPokemon(pokemon) {
         try {
             const response = await axios.get('https://pokeapi.co/api/v2/pokemon?offset=0&limit=20');
-            setPokemon(response.data.results);
+            const results=response.data.results;
+
+            const detailPokemon = results.map(async (pokemonCard) =>{
+                const pokemonDetail = await axios.get(pokemonCard.url);
+                return {
+                    name: pokemonDetail.name || 'onbekend',
+                    image:pokemonDetail.data.sprites.front_default || 'geen plaatje',
+                    moves: pokemonDetail.data.moves.length || 'onbekend',
+                    weight: pokemonDetail.data.weight || 'onbekend',
+
+                };
+            });
+            const pokemonList = await Promise.all(detailPokemon);
+            setPokemon(pokemonList);
         }catch(error){
             console.error(error);
     }
@@ -24,7 +37,10 @@ useEffect(() =>
 <ul>
     {pokemon.map((pokecard)=>(
     <li key={pokecard.name}>
-        <p>{pokecard.name}</p>
+        <h2>{pokecard.name}</h2>
+        <img src={pokecard.image} alt={pokecard.name} />
+        <p>Moves: {pokecard.moves}</p>
+        <p>Weight: {pokecard.weight}</p>
     </li>
     ))}
 </ul>
