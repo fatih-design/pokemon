@@ -6,9 +6,14 @@ import axios from 'axios';
 function App() {
     const [pokemon, setPokemon] = useState([]);
     const [error, setError] = useState(null);
-    async function fetchPokemon() {
+    const [page,setPage] = useState(0);
+
+    const pageItems = 20;
+
+    async function fetchPokemon(currentPage) {
         try {
-            const response = await axios.get('https://pokeapi.co/api/v2/pokemon?offset=0&limit=20');
+            const offset = currentPage * pageItems
+            const response = await axios.get(`https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=${pageItems}`);
             const results = response.data.results;
 
             const detailPokemon = results.map(async (pokemonCard) => {
@@ -31,8 +36,17 @@ function App() {
     }
 
     useEffect(() => {
-        fetchPokemon();
-    }, []);
+        fetchPokemon(page);
+    }, [page]);
+
+    const goToNextPage = () =>{
+        setPage(page + 1);
+    };
+    const goToPreviousPage = () =>{
+        if(page > 0 ){
+            setPage(page -1);
+        }
+    };
 
     if (error) {
         return <p>{error}</p>;
@@ -61,6 +75,14 @@ function App() {
                 ))}
 
             </ul>
+            <div className="pagination">
+                <button onClick={goToPreviousPage} disabled={page === 0}>
+                    Vorige
+                </button>
+                <button onClick={goToNextPage}>
+                    Volgende
+                </button>
+            </div>
         </>
     )
 }
